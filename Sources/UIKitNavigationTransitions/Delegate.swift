@@ -19,6 +19,16 @@ final class NavigationTransitionDelegate: NSObject, UINavigationControllerDelega
 
 	func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
 		baseDelegate?.navigationController?(navigationController, didShow: viewController, animated: animated)
+
+		// If an interactive pop was in progress, determine if it completed by comparing view controller counts
+		if let initial = navigationController.interactiveInitialViewControllerCount {
+			let current = navigationController.viewControllers.count
+			let didPop = current < initial
+			DispatchQueue.main.async {
+				navigationController.interactiveCompletionObserver?(didPop)
+			}
+			navigationController.interactiveInitialViewControllerCount = nil
+		}
 	}
 
 	func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
